@@ -131,6 +131,7 @@ class PlacerTool3D(DirectFrame):
 
     def destroy(self):
         self.target = None
+        messenger.send('placer-destroyed', [self])
         DirectFrame.destroy(self)
 
     def setTarget(self, target):
@@ -315,9 +316,15 @@ class PlacerToolSpinner(DirectFrame):
         elif value == '-':
             return
         if '.' not in value:
-            value = int(value)
+            try:
+                value = int(value)
+            except:
+                return
         else:
-            value = '%.2f' % float(value)
+            try:
+                value = '%.2f' % float(value)
+            except:
+                return
         self.setValue(value)
 
     def setValue(self, value):

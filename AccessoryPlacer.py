@@ -124,7 +124,7 @@ HeadDict = {
     'b': '/models/char/bear-heads-1000',
     's': '/models/char/pig-heads-1000',
     'u': '/models/char/hedgehog-heads-1000',
-    'k': '/models/char/kangaroo-heads-',
+    'k': '/models/char/kangaroo-heads-1000',
 }
 
 
@@ -223,7 +223,7 @@ def loadHat():
     hatLabel['text'] = 'Hat: ' + modelName
     currHat = loader.loadModel(modelName)
     try:
-        pos, hpr, scale = data['hats']['specific'][currHatIndex][headSize]
+        pos, hpr, scale = data['hats']['specific'][str(currHatIndex)][headSize]
         print(pos, hpr, scale)
         currHat.setPos(*pos)
         currHat.setHpr(*hpr)
@@ -256,9 +256,7 @@ def changeHat(offset):
     
     unloadHat()
     
-    if currHatPlacer:
-        currHatPlacer.destroy()
-        currHatPlacer = None
+    destroyHatPlacer()
     
     loadHat()
     
@@ -276,14 +274,15 @@ def loadGlasses():
         glassesLabel['text'] = 'Glasses: None' 
         return
     modelName = GlassesModels[currGlassesIndex]
-    glassesLabel['text'] = 'Hat: ' + modelName
+    glassesLabel['text'] = 'Glasses: ' + modelName
     currGlasses = loader.loadModel(modelName)
     try:
-        pos, hpr, scale  = data['glasses']['specific'][currGlassesIndex][headSize]
+        pos, hpr, scale  = data['glasses']['specific'][str(currGlassesIndex)][headSize]
         currGlasses.setPos(*pos)
         currGlasses.setHpr(*hpr)
         currGlasses.setScale(*scale)
     except KeyError:
+        print('Couldnt find poshprscale')
         try:
             pos, hpr, scale = data['glasses']['defaults'][headSize]
             currGlasses.setPos(*pos)
@@ -309,9 +308,7 @@ def changeGlasses(offset):
         currGlassesIndex = len(GlassesModels) - 1
     
     unloadGlasses()
-    if currGlassesPlacer:
-        currGlassesPlacer.destroy()
-        currGlassesPlacer = None
+    destroyGlassesPlacer()
     loadGlasses()
 
 
@@ -347,16 +344,17 @@ def save():
     global currHeadIndex, currGlassesIndex, currHatIndex, currGlasses, currHat
     headSize = HeadSizes[currHeadIndex]
     if currGlassesIndex and currGlasses:
-        pos, hpr, scale = list(currGlasses.getPos()), list(currGlasses.getHpr()), list(currGlasses.getScale())
-        if currGlassesIndex not in data['glasses']['specific']:
-            data['glasses']['specific'][currGlassesIndex] = dict()
-        data['glasses']['specific'][currGlassesIndex][headSize] = [pos, hpr, scale]
+        pos, hpr, scale = list(round(i, 3) for i in currGlasses.getPos()), list(round(i, 3) for i in currGlasses.getHpr()), list(round(i, 3) for i in currGlasses.getScale())
+        
+        if str(currGlassesIndex) not in data['glasses']['specific']:
+            data['glasses']['specific'][str(currGlassesIndex)] = dict()
+        data['glasses']['specific'][str(currGlassesIndex)][headSize] = [pos, hpr, scale]
 
     if currHatIndex and currHat:
-        pos, hpr, scale = list(currHat.getPos()), list(currHat.getHpr()), list(currHat.getScale())
-        if currHatIndex not in data['hats']['specific']:
-            data['hats']['specific'][currHatIndex] = dict()
-        data['hats']['specific'][currHatIndex][headSize] = [pos, hpr, scale]
+        pos, hpr, scale = list(round(i, 3) for i in currHat.getPos()), list(round(i, 3) for i in currHat.getHpr()), list(round(i, 3) for i in currHat.getScale())
+        if str(currHatIndex) not in data['hats']['specific']:
+            data['hats']['specific'][str(currHatIndex)] = dict()
+        data['hats']['specific'][str(currHatIndex)][headSize] = [pos, hpr, scale]
 
     with open('accessories.json', 'w') as f:
         json.dump(data, f, sort_keys=True, indent=2, separators=(',', ': '))
@@ -386,19 +384,46 @@ glassesLabel = DirectLabel(parent=base.a2dBottomCenter, relief=None, text='Glass
 from PlacerTool3D import PlacerTool3D
 from panda3d.core import Point3, Quat
 
-def placeHat():
+def togglePlaceHat():
     global currHatPlacer
+    if currHatPlacer:
+        destroyHatPlacer()
+    else:
+        placeHat()
+
+
+def placeHat():
+    global currHat, currHatPlacer
+    destroyHatPlacer()
     if currHat:
-        if currHatPlacer:
-            currHatPlacer.destroy()
         currHatPlacer = PlacerTool3D(currHat)
+    ignoreCameraKeys()
+
+def destroyHatPlacer():
+    global currHatPlacer
+    if currHatPlacer:
+        currHatPlacer.destroy()
+        return
+
+def togglePlaceGlasses():
+    global currGlasses, currGlassesPlacer
+    if currGlassesPlacer:
+        destroyGlassesPlacer()
+    else:
+        placeGlasses()        
 
 def placeGlasses():
-    global currGlassesPlacer
+    global currGlasses, currGlassesPlacer
+    destroyGlassesPlacer()
     if currGlasses:
-        if currGlassesPlacer:
-            currGlassesPlacer.destroy()
         currGlassesPlacer = PlacerTool3D(currGlasses)
+    ignoreCameraKeys()
+
+def destroyGlassesPlacer():
+    global currGlassesPlacer
+    if currGlassesPlacer:
+        currGlassesPlacer.destroy()
+        return
 
 cameraLerps = [
     (Point3(0, 5, 0), Point3(180, 0, 0),),
@@ -414,15 +439,41 @@ def cameraLerp(i):
     camera.posQuatInterval(1.2, pos, quat).start()
 
 
-base.accept('h', placeHat)
-base.accept('g', placeGlasses)
+base.accept('h', togglePlaceHat)
+base.accept('g', togglePlaceGlasses)
 base.accept('o', base.oobe)
-base.accept('1', lambda: cameraLerp(1))
-base.accept('2', lambda: cameraLerp(2))
-base.accept('3', lambda: cameraLerp(3))
+
+def acceptCameraKeys():
+
+    base.accept('1', lambda: cameraLerp(0))
+    base.accept('2', lambda: cameraLerp(1))
+    base.accept('3', lambda: cameraLerp(2))
+    base.accept('4', lambda: cameraLerp(3))
+
+def ignoreCameraKeys():
+    base.ignore('1')
+    base.ignore('2')
+    base.ignore('3')
+    base.ignore('4')
+
+def onPlacerDestroy(placer):
+    global currGlassesPlacer, currHatPlacer
+    if placer == currHatPlacer:
+        currHatPlacer = None
+    if placer == currGlassesPlacer:
+        currGlassesPlacer = None
+    
+    if not currGlassesPlacer and not currHatPlacer:
+        acceptCameraKeys()
+
+base.accept('placer-destroyed', onPlacerDestroy)
 
 loadHead()
-
 camera.setPosHpr(0, 5, 0, 180, 0, 0)
+acceptCameraKeys()
 base.disableMouse()
-base.run()
+try:
+    base.run()
+except:
+    save()
+
