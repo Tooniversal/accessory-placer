@@ -125,10 +125,13 @@ HeadDict = {
     's': '/models/char/pig-heads-1000',
     'u': '/models/char/hedgehog-heads-1000',
     'k': '/models/char/kangaroo-heads-1000',
+    'e': '/models/char/deer-heads-1000'
 }
 
 
 HeadSizes = [
+    'es',
+    'el',
     'us',
     'ul',
     'ks',
