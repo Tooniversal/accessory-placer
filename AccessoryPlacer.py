@@ -341,10 +341,14 @@ def showShortHead(head):
     head.findAllMatches('**/muzzle-short-*').hide()
     head.ls()
     head.find('**/muzzle-short-neutral').show()
-    
+
+def hashDict(d):
+    return hash(json.dumps(d, sort_keys=True))
+
+lastDataHash = None
 
 def save():
-    global currHeadIndex, currGlassesIndex, currHatIndex, currGlasses, currHat
+    global lastDataHash, currHeadIndex, currGlassesIndex, currHatIndex, currGlasses, currHat
     headSize = HeadSizes[currHeadIndex]
     if currGlassesIndex and currGlasses:
         pos, hpr, scale = list(round(i, 3) for i in currGlasses.getPos()), list(round(i, 3) for i in currGlasses.getHpr()), list(round(i, 3) for i in currGlasses.getScale())
@@ -359,17 +363,44 @@ def save():
             data['hats']['specific'][str(currHatIndex)] = dict()
         data['hats']['specific'][str(currHatIndex)][headSize] = [pos, hpr, scale]
 
-    with open('accessories.json', 'w') as f:
-        json.dump(data, f, sort_keys=True, indent=2, separators=(',', ': '))
+    dataHash = hashDict(data)
+
+    if lastDataHash != dataHash:
+        with open('accessories.json', 'w') as f:
+            json.dump(data, f, sort_keys=True, indent=2, separators=(',', ': '))
+
+        lastDataHash = dataHash
+
+def __autosaveTask(task):
+    save()
+    return task.again
+
+def autosave():
+    if taskMgr.hasTaskNamed('autosave-task'):
+        taskMgr.remove('autosave-task')
+        autosaveButton['text'] = 'Autosave:\n\x01red\x01off\x02'
+    else:
+        save()
+        taskMgr.doMethodLater(10, __autosaveTask, 'autosave-task')
+        autosaveButton['text'] = 'Autosave:\n\x01green\x01on\x02'
 
 from direct.gui.DirectGui import *
-from panda3d.core import TextNode
+from panda3d.core import TextNode, TextProperties, TextPropertiesManager
 
 
 DGG.setDefaultFont(loader.loadFont('phase_3/models/fonts/ImpressBT.ttf'))
 DGG.setDefaultRolloverSound(loader.loadSfx('phase_3/audio/sfx/GUI_rollover.ogg'))
 DGG.setDefaultClickSound(loader.loadSfx('phase_3/audio/sfx/GUI_create_toon_fwd.ogg'))
 DGG.setDefaultDialogGeom(loader.loadModel('phase_3/models/gui/dialog_box_gui'))
+
+red = TextProperties()
+red.setTextColor(1, 0, 0, 1)
+TextPropertiesManager.getGlobalPtr().setProperties('red', red)
+green = TextProperties()
+green.setTextColor(0, 1, 0, 1)
+TextPropertiesManager.getGlobalPtr().setProperties('green', green)
+yellow = TextProperties()
+yellow.setTextColor(1, 1, 0, 1)
 
 frame = DirectFrame(parent=base.a2dTopRight,relief=DGG.SUNKEN, borderWidth=(0.01, 0.01), frameSize=(-0.3, 0.3, -0.3, 0.3), pos=(-0.3, 0, -0.3))
 nextHead = DirectButton(parent=frame, relief=2, text='Next Head', text_scale=0.04, borderWidth=(0.01, 0.01), frameSize=(-0.1, 0.1, -0.05, 0.05), pos=(0.15, 0, 0.2), command=changeHead, extraArgs=[1])
@@ -380,6 +411,7 @@ nextGlasses = DirectButton(parent=frame, relief=2, text='Next Glasses', text_sca
 previousGlasses = DirectButton(parent=frame, relief=2, text='Prev Glasses', text_scale=0.035, borderWidth=(0.01, 0.01), frameSize=(-0.1, 0.1, -0.05, 0.05), pos=(-0.15, 0, -0.05), command=changeGlasses, extraArgs=[-1])
 
 saveButton = DirectButton(parent=frame, relief=2, text='Save', text_scale=0.035, borderWidth=(0.01, 0.01), frameSize=(-0.1, 0.1, -0.05, 0.05), pos=(-0.15, 0, -0.25), command=save)
+autosaveButton = DirectButton(parent=frame, relief=2, text='Autosave:\n\x01red\x01off\x02', text_scale=0.035, borderWidth=(0.01, 0.01), frameSize=(-0.1, 0.1, -0.05, 0.05), text_pos=(0, 0.01), pos=(0.15, 0, -0.25), command=autosave)
 
 hatLabel = DirectLabel(parent=base.a2dBottomCenter, relief=None, text='Hat:', text_scale=0.05, pos=(0, 0, 0.1), text_align=TextNode.ACenter)
 glassesLabel = DirectLabel(parent=base.a2dBottomCenter, relief=None, text='Glasses:', text_scale=0.05, pos=(0, 0, .2), text_align=TextNode.ACenter)
