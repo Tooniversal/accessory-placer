@@ -52,7 +52,7 @@ class PlacerTool3D(DirectFrame):
     ORIG_NAME_POS = (-0.39, 0.0, 0.27)
     MINI_NAME_POS = (-0.39, 0.0, 0.0)
 
-    def __init__(self, target, increment=0.01, parent=aspect2d, pos=(0.0, 0.0, 0.0)):
+    def __init__(self, target, increment=0.01, hprIncrement=1.0, parent=aspect2d, pos=(0.0, 0.0, 0.0)):
         DirectFrame.__init__(self, parent)
         self.target = target
         self.increment = increment
@@ -88,11 +88,11 @@ class PlacerTool3D(DirectFrame):
         self.hprLabel = TTLabel(
             self.mainFrame, text='HPR: ', pos=(-0.39, 0.0, -0.19), text_align=TextNode.ALeft)
         self.hSpinner = PlacerToolSpinner(
-            self.mainFrame, value=hpr[0], pos=(-0.085, 0.0, -0.195), increment=increment, callback=self.handleHChange)
+            self.mainFrame, value=hpr[0], pos=(-0.085, 0.0, -0.195), increment=hprIncrement, callback=self.handleHChange)
         self.pSpinner = PlacerToolSpinner(
-            self.mainFrame, value=hpr[1], pos=(0.1, 0.0, -0.195), increment=increment, callback=self.handlePChange)
+            self.mainFrame, value=hpr[1], pos=(0.1, 0.0, -0.195), increment=hprIncrement, callback=self.handlePChange)
         self.rSpinner = PlacerToolSpinner(
-            self.mainFrame, value=hpr[2], pos=(0.28, 0.0, -0.195), increment=increment, callback=self.handleRChange)
+            self.mainFrame, value=hpr[2], pos=(0.28, 0.0, -0.195), increment=hprIncrement, callback=self.handleRChange)
         # scale
         scale = [round(s, 3) for s in self.target.getScale()]
         self.scaleLabel = TTLabel(
