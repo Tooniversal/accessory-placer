@@ -31,3 +31,6 @@ pymongo
 # Accessories
 AccessoryGlobals.py
 AccessoryGlobals_new.py
+
+# Custom Phase Files
+phase_*/*

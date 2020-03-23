@@ -153,7 +153,7 @@ HeadSizes = [
 ]
 
 
-    
+
 
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import loadPrcFileData
@@ -182,6 +182,7 @@ currGlassesIndex = 0
 currGlasses = None
 currHatPlacer = None
 currGlassesPlacer = None
+
 
 def loadHead():
     global currHead, currHeadIndex
@@ -256,11 +257,9 @@ def changeHat(offset):
         currHatIndex = 0
     elif currHatIndex <= -1:
         currHatIndex = len(HatModels) - 1
-    
+
     unloadHat()
-    
     destroyHatPlacer()
-    
     loadHat()
     
 def unloadHat():
@@ -269,6 +268,16 @@ def unloadHat():
         return
     currHat.removeNode()
     currHat = None
+
+def clearHat():
+    global currHat
+    global currHatIndex
+
+    if currHat is not None:
+        currHatIndex = 0
+        currHat.removeNode()
+        currHat = None
+        hatLabel['text'] = 'Hat: None'
 
 def loadGlasses():
     global currHeadIndex, currGlassesIndex, currGlasses, glassesLabel
@@ -321,6 +330,16 @@ def unloadGlasses():
         return
     currGlasses.removeNode()
     currGlasses = None
+
+def clearGlasses():
+    global currGlasses
+    global currGlassesIndex
+
+    if currGlasses is not None:
+        currHatIndex = 0
+        currGlasses.removeNode()
+        currHat = None
+        hatLabel['text'] = 'Glasses: None'
 
 
 def showLongHead(head):
@@ -402,16 +421,19 @@ TextPropertiesManager.getGlobalPtr().setProperties('green', green)
 yellow = TextProperties()
 yellow.setTextColor(1, 1, 0, 1)
 
-frame = DirectFrame(parent=base.a2dTopRight,relief=DGG.SUNKEN, borderWidth=(0.01, 0.01), frameSize=(-0.3, 0.3, -0.3, 0.3), pos=(-0.3, 0, -0.3))
+frame = DirectFrame(parent=base.a2dTopRight,relief=DGG.SUNKEN, borderWidth=(0.01, 0.01), frameSize=(-0.3, 0.3, -0.5, 0.3), pos=(-0.3, 0, -0.3))
 nextHead = DirectButton(parent=frame, relief=2, text='Next Head', text_scale=0.04, borderWidth=(0.01, 0.01), frameSize=(-0.1, 0.1, -0.05, 0.05), pos=(0.15, 0, 0.2), command=changeHead, extraArgs=[1])
-previousHead = DirectButton(parent=frame, relief=2, text='Prev Head', text_scale=0.04, borderWidth=(0.01, 0.01), frameSize=(-0.1, 0.1, -0.05, 0.05), pos=(-0.15, 0, 0.2), command=changeHead, extraArgs=[-1])
+previousHead = DirectButton(parent=frame, relief=2, text='Prev Head', text_scale=0.04, borderWidth=(0.01, 0.01), frameSize=(-0.1, 0.1, -0.05, 0.05), pos=(-0.15, 0, 0.2), command=changeHead, extraArgs=[-1]) #delta +-15
 nextHat = DirectButton(parent=frame, relief=2, text='Next Hat', text_scale=0.04, borderWidth=(0.01, 0.01), frameSize=(-0.1, 0.1, -0.05, 0.05), pos=(0.15, 0, 0.05), command=changeHat, extraArgs=[1])
 previousHat = DirectButton(parent=frame, relief=2, text='Prev Hat', text_scale=0.04, borderWidth=(0.01, 0.01), frameSize=(-0.1, 0.1, -0.05, 0.05), pos=(-0.15, 0, 0.05), command=changeHat, extraArgs=[-1])
-nextGlasses = DirectButton(parent=frame, relief=2, text='Next Glasses', text_scale=0.035, borderWidth=(0.01, 0.01), frameSize=(-0.1, 0.1, -0.05, 0.05), pos=(0.15, 0, -0.05), command=changeGlasses, extraArgs=[1])
-previousGlasses = DirectButton(parent=frame, relief=2, text='Prev Glasses', text_scale=0.035, borderWidth=(0.01, 0.01), frameSize=(-0.1, 0.1, -0.05, 0.05), pos=(-0.15, 0, -0.05), command=changeGlasses, extraArgs=[-1])
+nextGlasses = DirectButton(parent=frame, relief=2, text='Next Glasses', text_scale=0.035, borderWidth=(0.01, 0.01), frameSize=(-0.1, 0.1, -0.05, 0.05), pos=(0.15, 0, -0.10), command=changeGlasses, extraArgs=[1]) #delta +- 25
+previousGlasses = DirectButton(parent=frame, relief=2, text='Prev Glasses', text_scale=0.035, borderWidth=(0.01, 0.01), frameSize=(-0.1, 0.1, -0.05, 0.05), pos=(-0.15, 0, -0.10), command=changeGlasses, extraArgs=[-1])
+clearHat = DirectButton(parent=frame, relief=2, text='Clear Hat', text_scale=0.035, borderWidth=(0.01, 0.01), frameSize=(-0.1, 0.1, -0.05, 0.05), pos=(-0.15, 0, -0.25), command=clearHat)
+clearGlasses = DirectButton(parent=frame, relief=2, text='Clear Glasses', text_scale=0.035, borderWidth=(0.01, 0.01), frameSize=(-0.1, 0.1, -0.05, 0.05), pos=(0.15, 0, -0.25), command=clearGlasses)
 
-saveButton = DirectButton(parent=frame, relief=2, text='Save', text_scale=0.035, borderWidth=(0.01, 0.01), frameSize=(-0.1, 0.1, -0.05, 0.05), pos=(-0.15, 0, -0.25), command=save)
-autosaveButton = DirectButton(parent=frame, relief=2, text='Autosave:\n\x01red\x01off\x02', text_scale=0.035, borderWidth=(0.01, 0.01), frameSize=(-0.1, 0.1, -0.05, 0.05), text_pos=(0, 0.01), pos=(0.15, 0, -0.25), command=autosave)
+
+saveButton = DirectButton(parent=frame, relief=2, text='Save', text_scale=0.035, borderWidth=(0.01, 0.01), frameSize=(-0.1, 0.1, -0.05, 0.05), pos=(-0.15, 0, -0.40), command=save)
+autosaveButton = DirectButton(parent=frame, relief=2, text='Autosave:\n\x01red\x01off\x02', text_scale=0.035, borderWidth=(0.01, 0.01), frameSize=(-0.1, 0.1, -0.05, 0.05), text_pos=(0, 0.01), pos=(0.15, 0, -0.40), command=autosave)
 
 hatLabel = DirectLabel(parent=base.a2dBottomCenter, relief=None, text='Hat:', text_scale=0.05, pos=(0, 0, 0.1), text_align=TextNode.ACenter)
 glassesLabel = DirectLabel(parent=base.a2dBottomCenter, relief=None, text='Glasses:', text_scale=0.05, pos=(0, 0, .2), text_align=TextNode.ACenter)
@@ -502,7 +524,8 @@ def onPlacerDestroy(placer):
         acceptCameraKeys()
 
 base.accept('placer-destroyed', onPlacerDestroy)
-
+hatLabel['text'] = 'Hat: None'
+glassesLabel['text'] = 'Glasses: None'
 loadHead()
 camera.setPosHpr(0, 5, 0, 180, 0, 0)
 acceptCameraKeys()
