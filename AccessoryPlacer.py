@@ -55,7 +55,9 @@ HatModels = [None,
  'phase_4/models/accessories/tt_m_chr_avt_acc_hat_dinosaur',
  'phase_4/models/accessories/tt_m_chr_avt_acc_hat_band',
  'phase_4/models/accessories/tt_m_chr_avt_acc_hat_birdNest',
- 'phase_4/models/accessories/tt_m_chr_avt_acc_hat_mousekateer']
+ 'phase_4/models/accessories/tt_m_chr_avt_acc_hat_mousekateer',
+ 'phase_4/models/accessories/tvs_m_chr_avt_acc_hat_hatBow'
+]
 HatTextures = [None,
  'phase_4/maps/tt_t_chr_avt_acc_hat_ribbonRed.jpg',
  'phase_4/maps/tt_t_chr_avt_acc_hat_ribbonPurple.jpg',
@@ -77,7 +79,11 @@ HatTextures = [None,
  'phase_4/maps/tt_t_chr_avt_acc_hat_ribbonCheckerGreen.jpg',
  'phase_4/maps/tt_t_chr_avt_acc_hat_partyToon.jpg',
  'phase_4/maps/tt_t_chr_avt_acc_hat_bowlerRoger.jpg',
- 'phase_4/maps/tt_m_chr_avt_acc_hat_mousekateer.jpg']
+ 'phase_4/maps/tt_m_chr_avt_acc_hat_mousekateer.jpg',
+ 'phase_4/maps/stPatricksHat.png',
+ 'phase_4/maps/apparel/holiday/easter/tvs_holiday_easterAcc_BowBlue.png',
+ 'phase_4/maps/apparel/holiday/easter/tvs_holiday_easterAcc_BowPink.png'
+]
 GlassesModels = [None,
  'phase_4/models/accessories/tt_m_chr_avt_acc_msk_roundGlasses',
  'phase_4/models/accessories/tt_m_chr_avt_acc_msk_miniblinds',
@@ -100,12 +106,51 @@ GlassesModels = [None,
  'phase_4/models/accessories/tt_m_chr_avt_acc_msk_squareRims',
  'phase_4/models/accessories/tt_m_chr_avt_acc_msk_eyepatch',
  'phase_4/models/accessories/tt_m_chr_avt_acc_msk_alienGlasses',
- 'phase_4/models/accessories/tt_m_chr_avt_acc_msk_hypno_goggles17']
+ 'phase_4/models/accessories/tt_m_chr_avt_acc_msk_hypno_goggles17',
+ 'phase_4/models/accessories/tvs_m_chr_avt_acc_msk_roseGlasses'
+]
 GlassesTextures = [None,
  'phase_4/maps/tt_t_chr_avt_acc_msk_masqueradeTypeMask2.jpg',
  'phase_4/maps/tt_t_chr_avt_acc_msk_masqueradeTypeMask4.jpg',
  'phase_4/maps/tt_t_chr_avt_acc_msk_masqueradeTypeMask5.jpg',
- 'phase_4/maps/tt_t_chr_avt_acc_msk_eyepatchGems.jpg']
+ 'phase_4/maps/tt_t_chr_avt_acc_msk_eyepatchGems.jpg'
+]
+BackpackModels = [None,
+ 'phase_4/models/accessories/tt_m_chr_avt_acc_pac_backpack',
+ 'phase_4/models/accessories/tt_m_chr_avt_acc_pac_batWings',
+ 'phase_4/models/accessories/tt_m_chr_avt_acc_pac_beeWings',
+ 'phase_4/models/accessories/tt_m_chr_avt_acc_pac_dragonFlyWings',
+ 'phase_4/models/accessories/tt_m_chr_avt_acc_pac_scubaTank',
+ 'phase_4/models/accessories/tt_m_chr_avt_acc_pac_sharkFin',
+ 'phase_4/models/accessories/tt_m_chr_avt_acc_pac_angelWings',
+ 'phase_4/models/accessories/tt_m_chr_avt_acc_pac_backpackWithToys',
+ 'phase_4/models/accessories/tt_m_chr_avt_acc_pac_butterflyWings',
+ 'phase_4/models/accessories/tt_m_chr_avt_acc_pac_dragonWing',
+ 'phase_4/models/accessories/tt_m_chr_avt_acc_pac_jetPack',
+ 'phase_4/models/accessories/tt_m_chr_avt_acc_pac_spiderLegs',
+ 'phase_4/models/accessories/tt_m_chr_avt_acc_pac_stuffedAnimalBackpackA',
+ 'phase_4/models/accessories/tt_m_chr_avt_acc_pac_birdWings',
+ 'phase_4/models/accessories/tt_m_chr_avt_acc_pac_stuffedAnimalBackpackCat',
+ 'phase_4/models/accessories/tt_m_chr_avt_acc_pac_stuffedAnimalBackpackDog',
+ 'phase_4/models/accessories/tt_m_chr_avt_acc_pac_airplane',
+ 'phase_4/models/accessories/tt_m_chr_avt_acc_pac_woodenSword',
+ 'phase_4/models/accessories/tt_m_chr_avt_acc_pac_supertoonCape',
+ 'phase_4/models/accessories/tt_m_chr_avt_acc_pac_vampireCape',
+ 'phase_4/models/accessories/tt_m_chr_avt_acc_pac_dinosaurTail',
+ 'phase_4/models/accessories/tt_m_chr_avt_acc_pac_band',
+ 'phase_4/models/accessories/tt_m_chr_avt_acc_pac_gags',
+ 'phase_4/models/accessories/tt_m_chr_avt_acc_pac_flunky',
+ 'phase_4/models/accessories/tvs_m_chr_avt_acc_pac_backpackChocolate',
+ 'phase_4/models/accessories/tvs_m_chr_avt_acc_pac_backpackClock'
+]
+BackpackTextures = [None,
+ 'phase_4/maps/tt_t_chr_avt_acc_pac_backpackOrange.jpg',
+ 'phase_4/maps/tt_t_chr_avt_acc_pac_backpackPurple.jpg',
+ 'phase_4/maps/tt_t_chr_avt_acc_pac_backpackPolkaDotRed.jpg',
+ 'phase_4/maps/tt_t_chr_avt_acc_pac_backpackPolkaDotYellow.jpg',
+ 'phase_4/maps/tt_t_chr_avt_acc_pac_angelWingsMultiColor.jpg',
+ 'phase_4/maps/tt_t_chr_avt_acc_pac_butterflyWingsStyle2.jpg'
+]
 
  
 HeadBaseDir = 'phase_3'
