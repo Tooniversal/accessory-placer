@@ -154,6 +154,7 @@ BackpackTextures = [None,
 
  
 HeadBaseDir = 'phase_3'
+TorsoBaseDir = 'phase_3'
 
 HeadDict = {
     'dls': '/models/char/tt_a_chr_dgm_shorts_head_1000',
@@ -172,7 +173,6 @@ HeadDict = {
     'k': '/models/char/kangaroo-heads-1000',
     'e': '/models/char/deer-heads-1000'
 }
-
 
 HeadSizes = [
     'es',
@@ -197,8 +197,32 @@ HeadSizes = [
     'sl',
 ]
 
+TorsoDict = {
+    'ss': '/models/char/tt_a_chr_dgs_shorts_torso_1000',
+    'ms': '/models/char/tt_a_chr_dgm_shorts_torso_1000',
+    'ls': '/models/char/tt_a_chr_dgl_shorts_torso_1000',
+    'sd': '/models/char/tt_a_chr_dgs_skirt_torso_1000',
+    'md': '/models/char/tt_a_chr_dgm_skirt_torso_1000',
+    'ld': '/models/char/tt_a_chr_dgl_skirt_torso_1000'
+}
 
+LegDict = {
+    's': '/models/char/tt_a_chr_dgs_shorts_legs_1000',
+    'm': '/models/char/tt_a_chr_dgm_shorts_legs_1000',
+    'l': '/models/char/tt_a_chr_dgl_shorts_legs_1000'
+}
 
+TorsoTypes = ['ss',
+ 'ms',
+ 'ls',
+ 'sd',
+ 'md',
+ 'ld',
+]
+
+TorsoSizes = ['s', 'm', 'l']
+
+LegTypes = ['s', 'm', 'l']
 
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import loadPrcFileData
@@ -214,20 +238,24 @@ base = AccessoryPlacer()
 loadPrcFileData('', 'default-model-extension .bam')
 loadPrcFileData('', 'model-path ../resources')
 
-
 with open('accessories.json', 'r') as f:
     data = json.load(f)
 
-
-currHeadIndex = 0
 currHead = None
-currHatIndex = 0
+currHeadIndex = 0
+currTorso = None
+currTorsoIndex = 0
+currLegs = None
+currLegsIndex = 0
+currBackpack = None
+currBackpackIndex = 0
 currHat = None
-currGlassesIndex = 0
+currHatIndex = 0
 currGlasses = None
+currGlassesIndex = 0
+currBackpackPlacer = None
 currHatPlacer = None
 currGlassesPlacer = None
-
 
 def loadHead():
     global currHead, currHeadIndex
@@ -240,14 +268,13 @@ def loadHead():
         showShortHead(currHead)
 
     currHead.reparentTo(render)
-
+    
 def unloadHead():
     global currHead
     currHead.removeNode()
-
-
+    
 def changeHead(offset):
-    global currHeadIndex
+    global currTorso, currHeadIndex
     currHeadIndex += offset
     
     if currHeadIndex >= len(HeadSizes):
@@ -256,10 +283,113 @@ def changeHead(offset):
         currHeadIndex = len(HeadSizes) - 1
     
     unloadHead()
+    if currTorso is not None:
+        unloadBackpack()
+        unloadTorso()
     loadHead()
     loadHat()
     loadGlasses()
+    
+def loadTorso():
+    global currTorso, currTorsoIndex
+    size = TorsoSizes[currTorsoIndex]
+    currTorso = loader.loadModel(TorsoBaseDir + TorsoDict[size + 's'])
+    showTorso(currTorso)
+    currTorso.setH(currTorso.getH() + 180)
+    currTorso.reparentTo(render)
 
+def unloadTorso():
+    global currTorso
+    if not currTorso:
+        return
+    currTorso.removeNode()
+    currTorso = None
+
+def changeTorso(offset):
+    global currHead, currTorsoIndex
+    currTorsoIndex += offset
+    
+    if currTorsoIndex >= len(TorsoSizes):
+        currTorsoIndex = 0
+    elif currTorsoIndex <= -1:
+        currTorsoIndex = len(TorsoSizes) - 1
+    
+    unloadBackpack()
+    unloadTorso()
+    if currHead is not None:
+        unloadHead()
+        unloadHat()
+        unloadGlasses()
+    loadTorso()
+    loadBackpack()
+    
+def loadBackpack():
+    global currTorsoIndex, currBackpackIndex, currBackpack, backpackLabel
+    torsoSize = TorsoSizes[currTorsoIndex]
+    print('loadBackpack', currBackpackIndex)
+    if currBackpackIndex == 0:
+        backpackLabel['text'] = 'Backpack: None'
+        return
+    modelName = BackpackModels[currBackpackIndex]
+    backpackLabel['text'] = 'Backpack: ' + modelName
+    currBackpack = loader.loadModel(modelName)
+    try:
+        pos, hpr, scale = data['backpacks']['specific'][str(currBackpackIndex)][torsoSize]
+        print(pos, hpr, scale)
+        currBackpack.setPos(*pos)
+        currBackpack.setHpr(*hpr)
+        currBackpack.setScale(*scale)
+    except KeyError:
+        try:
+            pos, hpr, scale = data['backpacks']['defaults'][torsoSize]
+            print(pos, hpr, scale)
+            currBackpack.setPos(*pos)
+            currBackpack.setHpr(*hpr)
+            currBackpack.setScale(*scale)
+        except KeyError:
+            pass
+    attachBackpack()
+
+def attachBackpack():
+    global currBackpack, currTorso
+    nodes = currTorso.findAllMatches('**/def_joint_attachFlower')
+    backpackNode = nodes[0].attachNewNode('backpackNode')
+    currBackpack.reparentTo(backpackNode)
+
+def changeBackpack(offset):
+    global currBackpack, currBackpackIndex, currHatPlacer
+    currBackpackIndex += offset
+    
+    if currBackpackIndex >= len(BackpackModels):
+        currBackpackIndex = 0
+    elif currBackpackIndex <= -1:
+        currBackpackIndex = len(BackpackModels) - 1
+    
+    unloadBackpack()
+    if currHead and not currHead.isEmpty():
+        unloadHead()
+        unloadHat()
+        unloadGlasses()
+    if not currTorso:
+        loadTorso()
+    destroyBackpackPlacer()
+    loadBackpack()
+    
+def unloadBackpack():
+    global currBackpack
+    if not currBackpack:
+        return
+    currBackpack.removeNode()
+    currBackpack = None
+
+def clearBackpack():
+    global currBackpack, currBackpackIndex
+
+    if currBackpack is not None:
+        currBackpackIndex = 0
+        currBackpack.removeNode()
+        currBackpack = None
+        backpackLabel['text'] = 'Backpack: None'
 
 def loadHat():
     global currHeadIndex, currHatIndex, currHat, hatLabel
@@ -288,22 +418,26 @@ def loadHat():
             pass
     attachHat()
 
-
 def attachHat():
     global currHat, currHead
     hatNode = currHead.attachNewNode('hatNode')
     currHat.reparentTo(hatNode)
 
 def changeHat(offset):
-    global currHatIndex, currHatPlacer
+    global currTorso, currHatIndex, currHatPlacer
     currHatIndex += offset
     
     if currHatIndex >= len(HatModels):
         currHatIndex = 0
     elif currHatIndex <= -1:
         currHatIndex = len(HatModels) - 1
-
+    
     unloadHat()
+    if currTorso is not None:
+        unloadBackpack()
+        unloadTorso()
+    if not currHead:
+        loadHead()
     destroyHatPlacer()
     loadHat()
     
@@ -349,7 +483,6 @@ def loadGlasses():
             pass
     attachGlasses()
 
-    
 def attachGlasses():
     global currGlasses, currHead
     glassesNode = currHead.attachNewNode('glassesNode')
@@ -363,11 +496,15 @@ def changeGlasses(offset):
         currGlassesIndex = 0
     elif currGlassesIndex <= -1:
         currGlassesIndex = len(GlassesModels) - 1
-    
+
     unloadGlasses()
+    if currTorso is not None:
+        unloadBackpack()
+        unloadTorso()
+    if not currHead:
+        loadHead()
     destroyGlassesPlacer()
     loadGlasses()
-
 
 def unloadGlasses():
     global currGlasses
@@ -385,7 +522,6 @@ def clearGlasses():
         currGlasses.removeNode()
         currHat = None
         hatLabel['text'] = 'Glasses: None'
-
 
 def showLongHead(head):
     head.findAllMatches('**/*-short*').hide()
@@ -405,6 +541,9 @@ def showShortHead(head):
     head.findAllMatches('**/muzzle-short-*').hide()
     head.ls()
     head.find('**/muzzle-short-neutral').show()
+    
+def showTorso(torso):
+    torso.ls()
 
 def hashDict(d):
     return hash(json.dumps(d, sort_keys=True))
@@ -412,17 +551,26 @@ def hashDict(d):
 lastDataHash = None
 
 def save():
-    global lastDataHash, currHeadIndex, currGlassesIndex, currHatIndex, currGlasses, currHat
+    global lastDataHash, currHeadIndex, currTorsoIndex, currBackpack, currBackpackIndex, currGlasses, currGlassesIndex, currHat, currHatIndex
     headSize = HeadSizes[currHeadIndex]
+    torsoSize = TorsoSizes[currTorsoIndex]
+    
+    if currBackpackIndex and currBackpack:
+        pos, hpr, scale = list(round(i, 4) for i in currBackpack.getPos()), list(round(i, 4) for i in currBackpack.getHpr()), list(round(i, 4) for i in currBackpack.getScale())
+        
+        if str(currBackpackIndex) not in data['backpacks']['specific']:
+            data['backpacks']['specific'][str(currBackpackIndex)] = dict()
+        data['backpacks']['specific'][str(currBackpackIndex)][torsoSize] = [pos, hpr, scale]
+    
     if currGlassesIndex and currGlasses:
-        pos, hpr, scale = list(round(i, 3) for i in currGlasses.getPos()), list(round(i, 3) for i in currGlasses.getHpr()), list(round(i, 3) for i in currGlasses.getScale())
+        pos, hpr, scale = list(round(i, 4) for i in currGlasses.getPos()), list(round(i, 4) for i in currGlasses.getHpr()), list(round(i, 4) for i in currGlasses.getScale())
         
         if str(currGlassesIndex) not in data['glasses']['specific']:
             data['glasses']['specific'][str(currGlassesIndex)] = dict()
         data['glasses']['specific'][str(currGlassesIndex)][headSize] = [pos, hpr, scale]
 
     if currHatIndex and currHat:
-        pos, hpr, scale = list(round(i, 3) for i in currHat.getPos()), list(round(i, 3) for i in currHat.getHpr()), list(round(i, 3) for i in currHat.getScale())
+        pos, hpr, scale = list(round(i, 4) for i in currHat.getPos()), list(round(i, 4) for i in currHat.getHpr()), list(round(i, 4) for i in currHat.getScale())
         if str(currHatIndex) not in data['hats']['specific']:
             data['hats']['specific'][str(currHatIndex)] = dict()
         data['hats']['specific'][str(currHatIndex)][headSize] = [pos, hpr, scale]
@@ -466,25 +614,49 @@ TextPropertiesManager.getGlobalPtr().setProperties('green', green)
 yellow = TextProperties()
 yellow.setTextColor(1, 1, 0, 1)
 
-frame = DirectFrame(parent=base.a2dTopRight,relief=DGG.SUNKEN, borderWidth=(0.01, 0.01), frameSize=(-0.3, 0.3, -0.5, 0.3), pos=(-0.3, 0, -0.3))
+frame = DirectFrame(parent=base.a2dTopRight,relief=DGG.SUNKEN, borderWidth=(0.01, 0.01), frameSize=(-0.3, 0.3, -0.95, 0.3), pos=(-0.3, 0, -0.3))
 nextHead = DirectButton(parent=frame, relief=2, text='Next Head', text_scale=0.04, borderWidth=(0.01, 0.01), frameSize=(-0.1, 0.1, -0.05, 0.05), pos=(0.15, 0, 0.2), command=changeHead, extraArgs=[1])
-previousHead = DirectButton(parent=frame, relief=2, text='Prev Head', text_scale=0.04, borderWidth=(0.01, 0.01), frameSize=(-0.1, 0.1, -0.05, 0.05), pos=(-0.15, 0, 0.2), command=changeHead, extraArgs=[-1]) #delta +-15
-nextHat = DirectButton(parent=frame, relief=2, text='Next Hat', text_scale=0.04, borderWidth=(0.01, 0.01), frameSize=(-0.1, 0.1, -0.05, 0.05), pos=(0.15, 0, 0.05), command=changeHat, extraArgs=[1])
-previousHat = DirectButton(parent=frame, relief=2, text='Prev Hat', text_scale=0.04, borderWidth=(0.01, 0.01), frameSize=(-0.1, 0.1, -0.05, 0.05), pos=(-0.15, 0, 0.05), command=changeHat, extraArgs=[-1])
-nextGlasses = DirectButton(parent=frame, relief=2, text='Next Glasses', text_scale=0.035, borderWidth=(0.01, 0.01), frameSize=(-0.1, 0.1, -0.05, 0.05), pos=(0.15, 0, -0.10), command=changeGlasses, extraArgs=[1]) #delta +- 25
-previousGlasses = DirectButton(parent=frame, relief=2, text='Prev Glasses', text_scale=0.035, borderWidth=(0.01, 0.01), frameSize=(-0.1, 0.1, -0.05, 0.05), pos=(-0.15, 0, -0.10), command=changeGlasses, extraArgs=[-1])
-clearHat = DirectButton(parent=frame, relief=2, text='Clear Hat', text_scale=0.035, borderWidth=(0.01, 0.01), frameSize=(-0.1, 0.1, -0.05, 0.05), pos=(-0.15, 0, -0.25), command=clearHat)
-clearGlasses = DirectButton(parent=frame, relief=2, text='Clear Glasses', text_scale=0.035, borderWidth=(0.01, 0.01), frameSize=(-0.1, 0.1, -0.05, 0.05), pos=(0.15, 0, -0.25), command=clearGlasses)
+previousHead = DirectButton(parent=frame, relief=2, text='Prev Head', text_scale=0.04, borderWidth=(0.01, 0.01), frameSize=(-0.1, 0.1, -0.05, 0.05), pos=(-0.15, 0, 0.2), command=changeHead, extraArgs=[-1]) 
+nextTorso = DirectButton(parent=frame, relief=2, text='Next Torso', text_scale=0.04, borderWidth=(0.01, 0.01), frameSize=(-0.1, 0.1, -0.05, 0.05), pos=(0.15, 0, 0.05), command=changeTorso, extraArgs=[1])
+previousTorso = DirectButton(parent=frame, relief=2, text='Prev Torso', text_scale=0.04, borderWidth=(0.01, 0.01), frameSize=(-0.1, 0.1, -0.05, 0.05), pos=(-0.15, 0, 0.05), command=changeTorso, extraArgs=[-1])
+nextBackpack = DirectButton(parent=frame, relief=2, text='Next Backpack', text_scale=0.030, borderWidth=(0.01, 0.01), frameSize=(-0.1, 0.1, -0.05, 0.05), pos=(0.15, 0, -0.10), command=changeBackpack, extraArgs=[1])
+previousBackpack = DirectButton(parent=frame, relief=2, text='Prev Backpack', text_scale=0.030, borderWidth=(0.01, 0.01), frameSize=(-0.1, 0.1, -0.05, 0.05), pos=(-0.15, 0, -0.10), command=changeBackpack, extraArgs=[-1])
+nextHat = DirectButton(parent=frame, relief=2, text='Next Hat', text_scale=0.04, borderWidth=(0.01, 0.01), frameSize=(-0.1, 0.1, -0.05, 0.05), pos=(0.15, 0, -0.25), command=changeHat, extraArgs=[1])
+previousHat = DirectButton(parent=frame, relief=2, text='Prev Hat', text_scale=0.04, borderWidth=(0.01, 0.01), frameSize=(-0.1, 0.1, -0.05, 0.05), pos=(-0.15, 0, -0.25), command=changeHat, extraArgs=[-1])
+nextGlasses = DirectButton(parent=frame, relief=2, text='Next Glasses', text_scale=0.035, borderWidth=(0.01, 0.01), frameSize=(-0.1, 0.1, -0.05, 0.05), pos=(0.15, 0, -0.40), command=changeGlasses, extraArgs=[1]) #delta +- 25
+previousGlasses = DirectButton(parent=frame, relief=2, text='Prev Glasses', text_scale=0.035, borderWidth=(0.01, 0.01), frameSize=(-0.1, 0.1, -0.05, 0.05), pos=(-0.15, 0, -0.40), command=changeGlasses, extraArgs=[-1])
+clearBackpack = DirectButton(parent=frame, relief=2, text='Clear Backpack', text_scale=0.030, borderWidth=(0.01, 0.01), frameSize=(-0.1, 0.1, -0.05, 0.05), pos=(-0.15, 0, -0.55), command=clearBackpack)
+clearHat = DirectButton(parent=frame, relief=2, text='Clear Hat', text_scale=0.035, borderWidth=(0.01, 0.01), frameSize=(-0.1, 0.1, -0.05, 0.05), pos=(0.15, 0, -0.55), command=clearHat)
+clearGlasses = DirectButton(parent=frame, relief=2, text='Clear Glasses', text_scale=0.035, borderWidth=(0.01, 0.01), frameSize=(-0.1, 0.1, -0.05, 0.05), pos=(-0.15, 0, -0.70), command=clearGlasses)
+saveButton = DirectButton(parent=frame, relief=2, text='Save', text_scale=0.035, borderWidth=(0.01, 0.01), frameSize=(-0.1, 0.1, -0.05, 0.05), pos=(-0.15, 0, -0.85), command=save)
+autosaveButton = DirectButton(parent=frame, relief=2, text='Autosave:\n\x01red\x01off\x02', text_scale=0.035, borderWidth=(0.01, 0.01), frameSize=(-0.1, 0.1, -0.05, 0.05), text_pos=(0, 0.01), pos=(0.15, 0, -0.85), command=autosave)
 
-
-saveButton = DirectButton(parent=frame, relief=2, text='Save', text_scale=0.035, borderWidth=(0.01, 0.01), frameSize=(-0.1, 0.1, -0.05, 0.05), pos=(-0.15, 0, -0.40), command=save)
-autosaveButton = DirectButton(parent=frame, relief=2, text='Autosave:\n\x01red\x01off\x02', text_scale=0.035, borderWidth=(0.01, 0.01), frameSize=(-0.1, 0.1, -0.05, 0.05), text_pos=(0, 0.01), pos=(0.15, 0, -0.40), command=autosave)
-
-hatLabel = DirectLabel(parent=base.a2dBottomCenter, relief=None, text='Hat:', text_scale=0.05, pos=(0, 0, 0.1), text_align=TextNode.ACenter)
-glassesLabel = DirectLabel(parent=base.a2dBottomCenter, relief=None, text='Glasses:', text_scale=0.05, pos=(0, 0, .2), text_align=TextNode.ACenter)
+backpackLabel = DirectLabel(parent=base.a2dBottomCenter, relief=None, text='Backpack:', text_scale=0.05, pos=(0, 0, 0.1), text_align=TextNode.ACenter)
+hatLabel = DirectLabel(parent=base.a2dBottomCenter, relief=None, text='Hat:', text_scale=0.05, pos=(0, 0, 0.2), text_align=TextNode.ACenter)
+glassesLabel = DirectLabel(parent=base.a2dBottomCenter, relief=None, text='Glasses:', text_scale=0.05, pos=(0, 0, 0.3), text_align=TextNode.ACenter)
 
 from PlacerTool3D import PlacerTool3D
 from panda3d.core import Point3, Quat
+
+def togglePlaceBackpack():
+    global currBackpackPlacer
+    if currBackpackPlacer:
+        destroyBackpackPlacer()
+    else:
+        placeBackpack()
+
+def placeBackpack():
+    global currBackpack, currBackpackPlacer
+    destroyBackpackPlacer()
+    if currBackpack:
+        currBackpackPlacer = PlacerTool3D(currBackpack)
+    ignoreCameraKeys()
+
+def destroyBackpackPlacer():
+    global currBackpackPlacer
+    if currBackpackPlacer:
+        currBackpackPlacer.destroy()
+        return
 
 def togglePlaceHat():
     global currHatPlacer
@@ -492,7 +664,6 @@ def togglePlaceHat():
         destroyHatPlacer()
     else:
         placeHat()
-
 
 def placeHat():
     global currHat, currHatPlacer
@@ -541,6 +712,7 @@ def cameraLerp(i):
     camera.posQuatInterval(1.2, pos, quat).start()
 
 
+base.accept('b', togglePlaceBackpack)
 base.accept('h', togglePlaceHat)
 base.accept('g', togglePlaceGlasses)
 base.accept('o', base.oobe)
@@ -559,16 +731,19 @@ def ignoreCameraKeys():
     base.ignore('4')
 
 def onPlacerDestroy(placer):
-    global currGlassesPlacer, currHatPlacer
+    global currBackpackPlacer, currGlassesPlacer, currHatPlacer
+    if placer == currBackpackPlacer:
+        currBackpackPlacer = None
     if placer == currHatPlacer:
         currHatPlacer = None
     if placer == currGlassesPlacer:
         currGlassesPlacer = None
     
-    if not currGlassesPlacer and not currHatPlacer:
+    if not currBackpackPlacer and not currGlassesPlacer and not currHatPlacer:
         acceptCameraKeys()
 
 base.accept('placer-destroyed', onPlacerDestroy)
+backpackLabel['text'] = 'Backpack: None'
 hatLabel['text'] = 'Hat: None'
 glassesLabel['text'] = 'Glasses: None'
 loadHead()
@@ -579,4 +754,3 @@ try:
     base.run()
 except:
     save()
-
