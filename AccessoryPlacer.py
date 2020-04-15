@@ -157,10 +157,10 @@ HeadBaseDir = 'phase_3'
 TorsoBaseDir = 'phase_3'
 
 HeadDict = {
-    'dls': '/models/char/tt_a_chr_dgm_shorts_head_1000',
-    'dss': '/models/char/tt_a_chr_dgm_skirt_head_1000',
-    'dsl': '/models/char/tt_a_chr_dgs_shorts_head_1000',
-    'dll': '/models/char/tt_a_chr_dgl_shorts_head_1000',
+    'dsl': '/models/char/tt_a_chr_dgm_shorts_head_1000', # Unused in Placer
+    'ds': '/models/char/tt_a_chr_dgm_skirt_head_1000',
+    'dls': '/models/char/tt_a_chr_dgs_shorts_head_1000', # Unused in Placer
+    'dl': '/models/char/tt_a_chr_dgl_shorts_head_1000',
     'c': '/models/char/cat-heads-1000',
     'h': '/models/char/horse-heads-1000',
     'm': '/models/char/mouse-heads-1000',
@@ -181,6 +181,8 @@ HeadSizes = [
     'ul',
     'ks',
     'kl',
+    'dl',
+    'ds',
     'cs',
     'cl',
     'ms',
@@ -261,6 +263,12 @@ def loadHead():
     global currHead, currHeadIndex
     headSize = HeadSizes[currHeadIndex]
     species, size = headSize
+    if species == 'd':
+        species = species + size
+        currHead = loader.loadModel(HeadBaseDir + HeadDict[species])
+        showDogHead(currHead)
+        currHead.reparentTo(render)
+        return
     currHead = loader.loadModel(HeadBaseDir + HeadDict[species])
     if size == 'l':
         showLongHead(currHead)
@@ -541,6 +549,9 @@ def showShortHead(head):
     head.findAllMatches('**/muzzle-short-*').hide()
     head.ls()
     head.find('**/muzzle-short-neutral').show()
+    
+def showDogHead(head):
+    head.ls()
     
 def showTorso(torso):
     torso.ls()
