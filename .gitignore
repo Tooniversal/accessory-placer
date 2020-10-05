@@ -28,9 +28,7 @@ pymongo
 # Visual Studio
 .vs
 
-# Accessories
-AccessoryGlobals.py
-AccessoryGlobals_new.py
-
 # Custom Phase Files
 phase_*/*
+
+.history

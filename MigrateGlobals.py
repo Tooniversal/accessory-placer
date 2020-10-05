@@ -8,20 +8,20 @@ default_glasses = AccessoryGlobals.GlassesTransTable
 default_backpacks = AccessoryGlobals.BackpackTransTable
 hats = AccessoryGlobals.ExtendedHatTransTable
 glasses = AccessoryGlobals.ExtendedGlassesTransTable
-backpacks = AccessoryGlobals.ExtendedBackpackTransTable 
+backpacks = AccessoryGlobals.ExtendedBackpackTransTable
 
 with open('accessories.json', 'r') as f:
     extra = json.load(f)
-    
+
 def get_key(key):
     try:
         return int(key)
     except ValueError:
         return key
-        
+
 def remove_dups(dic):
     return {k:v for k,v in dic.items() if list(dic.values()).count(v)==1}
-    
+
 def merge(defaultAccessories, specificAccessories, fromDict, type):
     for animal, transform in fromDict['defaults'].items():
         #if animal[0] == mergeAnimal:
@@ -36,13 +36,13 @@ def merge(defaultAccessories, specificAccessories, fromDict, type):
             if animal in specificAccessories[int(number)] and specificAccessories[int(number)][animal] == transform:
                 continue
             specificAccessories[int(number)][animal] = tuple([tuple(x) for x in transform])
-                  
+
 def merge_in_head(defaultAccessories, specificAccessories, toDict, type):
     for animal, transform in defaultAccessories.items():
         if animal in toDict['defaults']:
             continue
         toDict['defaults'][animal] = tuple([tuple(x) for x in transform])
-    
+
     for number, specific in specificAccessories.items():
         for animal, transform in specific.items():
             if str(number) not in toDict['specific']:
@@ -50,13 +50,13 @@ def merge_in_head(defaultAccessories, specificAccessories, toDict, type):
             if animal in toDict['specific'][str(number)]:
                 continue
             toDict['specific'][str(number)][animal] = tuple([tuple(x) for x in transform])
-            
+
 def merge_in_torso(defaultAccessories, specificAccessories, toDict, type):
     for animal, transform in defaultAccessories.items():
         if animal in toDict['defaults']:
             continue
         toDict['defaults'][animal] = tuple([tuple(x) for x in transform])
-    
+
     for numberStr, specific in specificAccessories.items():
         numberStr = int(numberStr)
         for size, transform in specific.items():
@@ -65,7 +65,7 @@ def merge_in_torso(defaultAccessories, specificAccessories, toDict, type):
             if size in toDict['specific'][numberStr].keys():
                 continue
             toDict['specific'][numberStr][size] = tuple([tuple(x) for x in transform])
-            
+
 if 'backpacks' not in extra:
     extra['backpacks'] = {'defaults': {}, 'specific': {}}
     merge_in_torso(default_backpacks, backpacks, extra['backpacks'], 'backpacks')
@@ -89,12 +89,12 @@ def exportSpecificHead(accessories):
 
         for animal in sorted(accessory.keys()):
             animals.append("        '{0}': {1}".format(animal, accessory[animal]))
-        
+
         id = '    ' + str(number) + ': {\n' + ',\n'.join(animals) + '\n    }'
         ids.append(id)
 
     return ',\n'.join(ids)
-    
+
 def exportSpecificTorso(accessories):
     ids = []
 
@@ -104,7 +104,7 @@ def exportSpecificTorso(accessories):
         for size in sorted(accessories[number].keys()):
             string = "        '{0}': {1}".format(size, accessories[number][size])
             sizes.append(string)
-        
+
         id = '    ' + str(number) + ': {\n' + ',\n'.join(sizes) + '\n    }'
         if id in ids:
             continue
@@ -114,10 +114,10 @@ def exportSpecificTorso(accessories):
 
 def exportDefault(accessories):
     ids = []
-    
+
     for animal in sorted(accessories.keys()):
         ids.append("    '{0}': {1}".format(animal, accessories[animal]))
-    
+
     return ',\n'.join(ids)
 
 DefaultBackpackString = exportDefault(default_backpacks)
@@ -131,7 +131,7 @@ result = "BackpackTransTable  = {\n" + DefaultBackpackString + "\n}\nHatTransTab
 
 with open('AccessoryGlobals_new.py', 'w') as f:
     f.write(result)
-    
+
 # Re-dump the .json to make sure everything from .py is present.
 with open('accessories.json', 'w') as f:
     json.dump(extra, f, sort_keys=True, indent=2, separators=(',', ': '))
