@@ -41,6 +41,8 @@ class AccessoryPlacer(ShowBase):
         self.currBackpackPlacer = None
         self.currHatPlacer = None
         self.currGlassesPlacer = None
+        self.lastdataHash = None
+
 
 
         base.accept('b', self.togglePlaceBackpack)
@@ -57,7 +59,11 @@ class AccessoryPlacer(ShowBase):
         camera.setPosHpr(0, 5, 0, 180, 0, 0)
         self.acceptCameraKeys()
 
-        with open('accessories.json', 'r') as f:
+        JSONfile = "accessories.json"
+        #if not JSONfile.isfile():
+        # do json function
+        #    path = open("accessories.json", "x")
+        with open(JSONfile, 'r') as f:
             self.data = json.load(f)
 
         from PlacerTool3D import PlacerTool3D
@@ -345,8 +351,6 @@ class AccessoryPlacer(ShowBase):
     def hashDict(self, d):
         return hash(json.dumps(d, sort_keys=True))
 
-    lastdataHash = None
-
     def save(self):
         headSize = self.HeadSizes[self.currHeadIndex]
         torsoSize = self.TorsoSizes[self.currTorsoIndex]
@@ -373,11 +377,11 @@ class AccessoryPlacer(ShowBase):
 
         self.dataHash = self.hashDict(self.data)
 
-        if lastdataHash != self.dataHash:
+        if self.lastdataHash != self.dataHash:
             with open('accessories.json', 'w') as f:
                 json.dump(self.data, f, sort_keys=True, indent=2, separators=(',', ': '))
 
-            lastdataHash = self.dataHash
+            self.lastdataHash = self.dataHash
 
     def __autosaveTask(self, task):
         self.save()
@@ -428,9 +432,9 @@ class AccessoryPlacer(ShowBase):
         saveButton = DirectButton(parent=frame, relief=2, text='Save', text_scale=0.035, borderWidth=(0.01, 0.01), frameSize=(-0.1, 0.1, -0.05, 0.05), pos=(-0.15, 0, -0.85), command=self.save)
         self.autosaveButton = DirectButton(parent=frame, relief=2, text='Autosave:\n\x01red\x01off\x02', text_scale=0.035, borderWidth=(0.01, 0.01), frameSize=(-0.1, 0.1, -0.05, 0.05), text_pos=(0, 0.01), pos=(0.15, 0, -0.85), command=self.autosave)
 
-        backpackLabel = DirectLabel(parent=base.a2dBottomCenter, relief=None, text='Backpack:', text_scale=0.05, pos=(0, 0, 0.1), text_align=TextNode.ACenter)
-        hatLabel = DirectLabel(parent=base.a2dBottomCenter, relief=None, text='Hat:', text_scale=0.05, pos=(0, 0, 0.2), text_align=TextNode.ACenter)
-        glassesLabel = DirectLabel(parent=base.a2dBottomCenter, relief=None, text='Glasses:', text_scale=0.05, pos=(0, 0, 0.3), text_align=TextNode.ACenter)
+        self.backpackLabel = DirectLabel(parent=base.a2dBottomCenter, relief=None, text='Backpack:', text_scale=0.05, pos=(0, 0, 0.1), text_align=TextNode.ACenter)
+        self.hatLabel = DirectLabel(parent=base.a2dBottomCenter, relief=None, text='Hat:', text_scale=0.05, pos=(0, 0, 0.2), text_align=TextNode.ACenter)
+        self.glassesLabel = DirectLabel(parent=base.a2dBottomCenter, relief=None, text='Glasses:', text_scale=0.05, pos=(0, 0, 0.3), text_align=TextNode.ACenter)
 
 
     def togglePlaceBackpack(self):
