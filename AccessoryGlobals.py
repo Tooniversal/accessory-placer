@@ -56,7 +56,10 @@ HatModels = [None,
  'phase_4/models/accessories/tt_m_chr_avt_acc_hat_band',
  'phase_4/models/accessories/tt_m_chr_avt_acc_hat_birdNest',
  'phase_4/models/accessories/tt_m_chr_avt_acc_hat_mousekateer',
- 'phase_4/models/accessories/tvs_m_chr_avt_acc_hat_hatBow'
+ 'phase_4/models/accessories/tvs_m_chr_avt_acc_hat_hatBow',
+ 'phase_4/models/accessories/tvs_m_chr_avt_acc_hat_beanieHat',
+ 'phase_4/models/accessories/tvs_m_chr_avt_acc_hat_mistletoe',
+ 'phase_4/models/accessories/tvs_m_chr_avt_acc_hat_stripedElfHat'
 ]
 HatTextures = [None,
  'phase_4/maps/tt_t_chr_avt_acc_hat_ribbonRed.jpg',
