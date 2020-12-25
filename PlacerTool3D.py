@@ -24,7 +24,7 @@ class TTLabel(DirectLabel):
         SmallSize: 0.035
     }
 
-    def __init__(self, parent=aspect2d, text_size=1, pos=(0.0, 0.0, 0.0), text_align=TextNode.ACenter, text_wordwrap=16, text='', **kw):
+    def __init__(self, parent=None, text_size=1, pos=(0.0, 0.0, 0.0), text_align=TextNode.ACenter, text_wordwrap=16, text='', **kw):
         scale = self.Scales.get(text_size, self.Scales[self.NormalSize])
 
         optiondefs = (
@@ -37,7 +37,7 @@ class TTLabel(DirectLabel):
         )
 
         self.defineoptions(kw, optiondefs)
-        DirectLabel.__init__(self, parent)
+        DirectLabel.__init__(self, parent or aspect2d)
         self.initialiseoptions(TTLabel)
 
 
@@ -52,8 +52,8 @@ class PlacerTool3D(DirectFrame):
     ORIG_NAME_POS = (-0.39, 0.0, 0.27)
     MINI_NAME_POS = (-0.39, 0.0, 0.0)
 
-    def __init__(self, target, increment=0.01, hprIncrement=1.0, parent=aspect2d, pos=(0.0, 0.0, 0.0)):
-        DirectFrame.__init__(self, parent)
+    def __init__(self, target, increment=0.01, hprIncrement=1.0, parent=None, pos=(0.0, 0.0, 0.0)):
+        DirectFrame.__init__(self, parent or aspect2d)
         self.target = target
         self.increment = increment
         self.minimized = False
@@ -104,7 +104,7 @@ class PlacerTool3D(DirectFrame):
             self.mainFrame, value=hpr[1], pos=(0.1, 0.0, -0.4), increment=increment, callback=self.handleSyChange)
         self.szSpinner = PlacerToolSpinner(
             self.mainFrame, value=hpr[2], pos=(0.28, 0.0, -0.4), increment=increment, callback=self.handleSzChange)
-    
+
         gui.removeNode()
         gui = loader.loadModel('phase_3/models/gui/tt_m_gui_mat_nameShop')
         thumb = gui.find('**/tt_t_gui_mat_namePanelCircle')
@@ -126,6 +126,7 @@ class PlacerTool3D(DirectFrame):
             extraArgs=[]
         )
         self.dragButton.bind(DGG.B1PRESS, self.onPress)
+        self.dragButton.bind(DGG.B1RELEASE, self.onRelease)
         if target is not None:
             self.setTarget(target)
 
@@ -234,12 +235,10 @@ class PlacerTool3D(DirectFrame):
         self.scaleLabel.show()
         self.setPos(0, 0, 0)
 
-    def onPress(self, e=None):
-        self.accept('mouse1-up', self.onRelease)
+    def onPress(self, *args):
         taskMgr.add(self.mouseMoverTask, '%s-mouseMoverTask' % self.id)
 
-    def onRelease(self, e=None):
-        self.ignore('mouse1-up')
+    def onRelease(self, *args):
         taskMgr.remove('%s-mouseMoverTask' % self.id)
 
     def mouseMoverTask(self, task):
@@ -252,8 +251,8 @@ class PlacerTool3D(DirectFrame):
 
 
 class PlacerToolSpinner(DirectFrame):
-    def __init__(self, parent=render2d, pos=(0.0, 0.0, 0.0), scale=1.0, value=0, callback=None, increment=0.01):
-        DirectFrame.__init__(self, parent, pos=pos, scale=1.0)
+    def __init__(self, parent=None, pos=(0.0, 0.0, 0.0), scale=1.0, value=0, callback=None, increment=0.01):
+        DirectFrame.__init__(self, parent or render2d, pos=pos, scale=1.0)
         self.increment = increment
         self.value = Decimal(value)
         self.callback = callback

@@ -3,9 +3,11 @@ from direct.showbase.ShowBase import ShowBase
 from panda3d.core import loadPrcFileData
 from panda3d.core import Point3, Quat
 
-import json
+from PlacerTool3D import PlacerTool3D
 import ToonGlobals
 import AccessoryGlobals
+
+import json
 
 class AccessoryPlacer(ShowBase):
 
@@ -43,8 +45,6 @@ class AccessoryPlacer(ShowBase):
         self.currGlassesPlacer = None
         self.lastdataHash = None
 
-
-
         base.accept('b', self.togglePlaceBackpack)
         base.accept('h', self.togglePlaceHat)
         base.accept('g', self.togglePlaceGlasses)
@@ -66,7 +66,6 @@ class AccessoryPlacer(ShowBase):
         with open(JSONfile, 'r') as f:
             self.data = json.load(f)
 
-        from PlacerTool3D import PlacerTool3D
         self.loadGUI()
 
     def loadHead(self):
